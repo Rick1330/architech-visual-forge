@@ -1,3 +1,4 @@
+
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -9,7 +10,9 @@ import {
   User, 
   PanelLeftOpen, 
   PanelRightOpen,
-  Layers
+  Layers,
+  PanelLeftClose,
+  PanelRightClose
 } from 'lucide-react';
 import { useArchitectStore } from '@/stores/useArchitectStore';
 
@@ -22,7 +25,7 @@ export const AppHeader = () => {
   } = useArchitectStore();
 
   return (
-    <header className="h-14 bg-card border-b border-border flex items-center justify-between px-4">
+    <header className="h-14 bg-card border-b border-border flex items-center justify-between px-4 relative z-50">
       {/* Left: Logo and Project */}
       <div className="flex items-center gap-4">
         <div className="flex items-center gap-2">
@@ -40,6 +43,21 @@ export const AppHeader = () => {
             Untitled Architecture
           </Badge>
         </div>
+
+        {/* Palette Toggle Button - Moved here */}
+        <Button 
+          variant={showComponentPalette ? "default" : "outline"} 
+          size="sm"
+          onClick={toggleComponentPalette}
+          className="flex items-center gap-2 transition-all duration-300"
+        >
+          {showComponentPalette ? (
+            <PanelLeftClose className="h-4 w-4" />
+          ) : (
+            <PanelLeftOpen className="h-4 w-4" />
+          )}
+          <span className="hidden md:block">Palette</span>
+        </Button>
       </div>
 
       {/* Center: Quick Actions */}
@@ -63,23 +81,17 @@ export const AppHeader = () => {
       {/* Right: Panel Controls and User */}
       <div className="flex items-center gap-2">
         <Button 
-          variant={showComponentPalette ? "default" : "outline"} 
-          size="sm"
-          onClick={toggleComponentPalette}
-          className="hidden md:flex"
-        >
-          <PanelLeftOpen className="h-4 w-4 mr-2" />
-          Palette
-        </Button>
-        
-        <Button 
           variant={showPropertyPanel ? "default" : "outline"} 
           size="sm"
           onClick={togglePropertyPanel}
-          className="hidden md:flex"
+          className="flex items-center gap-2 transition-all duration-300"
         >
-          <PanelRightOpen className="h-4 w-4 mr-2" />
-          Properties
+          {showPropertyPanel ? (
+            <PanelRightClose className="h-4 w-4" />
+          ) : (
+            <PanelRightOpen className="h-4 w-4" />
+          )}
+          <span className="hidden md:block">Properties</span>
         </Button>
         
         <Button variant="outline" size="sm">

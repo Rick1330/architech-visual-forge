@@ -1,7 +1,8 @@
 import { memo } from 'react';
 import { Handle, Position } from '@xyflow/react';
-import { Server } from 'lucide-react';
+import { Server, AlertCircle, CheckCircle, AlertTriangle } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
+import { useArchitectStore } from '@/stores/useArchitectStore';
 
 interface NodeProps {
   data: {
@@ -15,18 +16,56 @@ interface NodeProps {
   selected?: boolean;
 }
 
-export const GenericServiceNode = memo(({ data, selected }: NodeProps) => {
+export const GenericServiceNode = memo(({ data, selected, id }: NodeProps & { id: string }) => {
+  const { nodeStatuses } = useArchitectStore();
+  const status = nodeStatuses[id] || { status: 'idle' };
+  
   const nameProperty = data.properties?.find(p => p.id === 'name');
-  const instanceCountProperty = data.properties?.find(p => p.id === 'instanceCount');
+  const instancesProperty = data.properties?.find(p => p.id === 'instanceCount');
   const name = nameProperty?.value || data.label || 'Service';
-  const instanceCount = instanceCountProperty?.value || 1;
+  const instances = instancesProperty?.value || 1;
+
+  const getStatusIcon = () => {
+    switch (status.status) {
+      case 'active':
+        return <CheckCircle className="h-3 w-3 text-status-active" />;
+      case 'error':
+        return <AlertCircle className="h-3 w-3 text-status-error" />;
+      case 'warning':
+        return <AlertTriangle className="h-3 w-3 text-status-warning" />;
+      default:
+        return null;
+    }
+  };
+
+  const getStatusBorder = () => {
+    switch (status.status) {
+      case 'active':
+        return 'border-status-active shadow-glow-active';
+      case 'error':
+        return 'border-status-error shadow-glow-error animate-pulse';
+      case 'warning':
+        return 'border-status-warning';
+      default:
+        return 'border-border hover:border-node-service/50';
+    }
+  };
 
   return (
     <div className={`
       relative bg-card border-2 rounded-lg shadow-node transition-all duration-200
-      ${selected ? 'border-canvas-selection shadow-glow-active' : 'border-border hover:border-node-service/50'}
+      ${selected ? 'border-canvas-selection shadow-glow-active' : getStatusBorder()}
       min-w-[140px] max-w-[200px]
     `}>
+      {/* Status Indicator */}
+      {status.status !== 'idle' && (
+        <div className="absolute -top-2 -right-2 z-10">
+          <div className="w-6 h-6 bg-card border-2 border-current rounded-full flex items-center justify-center">
+            {getStatusIcon()}
+          </div>
+        </div>
+      )}
+      
       <Handle
         type="target"
         position={Position.Left}
@@ -45,12 +84,32 @@ export const GenericServiceNode = memo(({ data, selected }: NodeProps) => {
           <Badge variant="secondary" className="text-xs">
             Service
           </Badge>
-          {instanceCount > 1 && (
-            <Badge variant="outline" className="text-xs">
-              {instanceCount}x
-            </Badge>
-          )}
+          <Badge variant="outline" className="text-xs">
+            {instances}x
+          </Badge>
         </div>
+        
+        {/* Metrics Display */}
+        {status.metrics && (
+          <div className="mt-2 pt-2 border-t border-border space-y-1">
+            <div className="flex justify-between text-xs">
+              <span className="text-muted-foreground">CPU:</span>
+              <span className={status.metrics.cpu > 80 ? 'text-status-error' : 'text-foreground'}>
+                {status.metrics.cpu}%
+              </span>
+            </div>
+            <div className="flex justify-between text-xs">
+              <span className="text-muted-foreground">Memory:</span>
+              <span className={status.metrics.memory > 80 ? 'text-status-error' : 'text-foreground'}>
+                {status.metrics.memory}%
+              </span>
+            </div>
+            <div className="flex justify-between text-xs">
+              <span className="text-muted-foreground">RPS:</span>
+              <span>{status.metrics.requests}</span>
+            </div>
+          </div>
+        )}
       </div>
       
       <Handle

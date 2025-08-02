@@ -201,3 +201,38 @@ All colors MUST be HSL.
   -webkit-box-orient: vertical;
   overflow: hidden;
 }
+
+/* Enhanced Animations */
+@keyframes flow {
+  to {
+    stroke-dashoffset: -8;
+  }
+}
+
+@keyframes pulse-glow {
+  0%, 100% {
+    box-shadow: 0 0 0 0 hsl(var(--status-active) / 0.4);
+  }
+  50% {
+    box-shadow: 0 0 0 8px hsl(var(--status-active) / 0);
+  }
+}
+
+@keyframes error-pulse {
+  0%, 100% {
+    border-color: hsl(var(--status-error));
+    box-shadow: 0 0 0 0 hsl(var(--status-error) / 0.4);
+  }
+  50% {
+    border-color: hsl(var(--status-error) / 0.8);
+    box-shadow: 0 0 0 4px hsl(var(--status-error) / 0);
+  }
+}
+
+.animate-pulse-glow {
+  animation: pulse-glow 2s infinite;
+}
+
+.animate-error-pulse {
+  animation: error-pulse 1s infinite;
+}

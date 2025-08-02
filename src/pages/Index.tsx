@@ -2,11 +2,16 @@ import { AppHeader } from '@/components/AppHeader';
 import { ComponentPalette } from '@/components/ComponentPalette';
 import { ArchitectCanvas } from '@/components/ArchitectCanvas';
 import { PropertyPanel } from '@/components/PropertyPanel';
+import { EnhancedPropertyPanel } from '@/components/EnhancedPropertyPanel';
 import { SimulationTimeline } from '@/components/SimulationTimeline';
 import { useArchitectStore } from '@/stores/useArchitectStore';
+import { useSimulationEngine } from '@/hooks/useSimulationEngine';
 
 const Index = () => {
   const { showComponentPalette, showPropertyPanel } = useArchitectStore();
+  
+  // Initialize simulation engine
+  useSimulationEngine();
 
   return (
     <div className="h-screen flex flex-col bg-background">
@@ -20,7 +25,7 @@ const Index = () => {
           <SimulationTimeline />
         </div>
         
-        {showPropertyPanel && <PropertyPanel />}
+        {showPropertyPanel && <EnhancedPropertyPanel />}
       </div>
     </div>
   );

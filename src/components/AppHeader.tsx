@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import { ProjectSwitcher } from '@/components/ProjectSwitcher';
 import { 
   Save, 
   Upload, 
@@ -9,7 +10,10 @@ import {
   User, 
   PanelLeftOpen, 
   PanelRightOpen,
-  Layers
+  Layers,
+  FolderOpen,
+  Play,
+  Pause
 } from 'lucide-react';
 import { useArchitectStore } from '@/stores/useArchitectStore';
 
@@ -17,8 +21,14 @@ export const AppHeader = () => {
   const { 
     showComponentPalette, 
     showPropertyPanel, 
+    currentProject,
+    simulation,
     toggleComponentPalette, 
-    togglePropertyPanel 
+    togglePropertyPanel,
+    toggleProjectSwitcher,
+    saveProject,
+    startSimulation,
+    pauseSimulation
   } = useArchitectStore();
 
   return (
@@ -34,17 +44,41 @@ export const AppHeader = () => {
           </h1>
         </div>
         
-        <div className="hidden md:flex items-center gap-2">
-          <span className="text-sm text-muted-foreground">Project:</span>
-          <Badge variant="outline" className="text-sm">
-            Untitled Architecture
-          </Badge>
-        </div>
+        <div className="h-6 w-px bg-border" />
+        
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={toggleProjectSwitcher}
+          className="flex items-center gap-2"
+        >
+          <FolderOpen className="h-4 w-4" />
+          <span className="font-medium">{currentProject?.name || 'Select Project'}</span>
+        </Button>
       </div>
 
-      {/* Center: Quick Actions */}
+      {/* Center: Simulation Control */}
       <div className="flex items-center gap-2">
-        <Button variant="outline" size="sm" className="hidden sm:flex">
+        <Button 
+          variant={simulation.isRunning ? "secondary" : "default"}
+          size="sm"
+          onClick={simulation.isRunning ? pauseSimulation : startSimulation}
+          className="flex items-center gap-2"
+        >
+          {simulation.isRunning ? (
+            <>
+              <Pause className="h-4 w-4" />
+              Pause
+            </>
+          ) : (
+            <>
+              <Play className="h-4 w-4" />
+              Simulate
+            </>
+          )}
+        </Button>
+        
+        <Button variant="outline" size="sm" onClick={saveProject} className="hidden sm:flex">
           <Save className="h-4 w-4 mr-2" />
           Save
         </Button>
@@ -90,6 +124,8 @@ export const AppHeader = () => {
           <User className="h-4 w-4" />
         </Button>
       </div>
+      
+      <ProjectSwitcher />
     </header>
   );
 };

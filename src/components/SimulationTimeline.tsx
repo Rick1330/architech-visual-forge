@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Slider } from '@/components/ui/slider';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
+import { SimulationEventMarkers } from '@/components/SimulationEventMarkers';
 import { 
   Play, 
   Pause, 
@@ -102,7 +103,8 @@ export const SimulationTimeline = () => {
             {formatTime(simulation.currentTime)}
           </span>
           
-          <div className="flex-1 px-4">
+          <div className="flex-1 px-4 relative">
+            <SimulationEventMarkers />
             <Slider
               value={playbackPosition}
               onValueChange={setPlaybackPosition}

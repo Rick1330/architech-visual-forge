@@ -1,7 +1,8 @@
 import { memo } from 'react';
 import { Handle, Position } from '@xyflow/react';
-import { MessageSquare } from 'lucide-react';
+import { MessageSquare, AlertCircle, CheckCircle, AlertTriangle } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
+import { useArchitectStore } from '@/stores/useArchitectStore';
 
 interface NodeProps {
   data: {
@@ -13,20 +14,59 @@ interface NodeProps {
     }>;
   };
   selected?: boolean;
+  id: string;
 }
 
-export const MessageQueueNode = memo(({ data, selected }: NodeProps) => {
+export const MessageQueueNode = memo(({ data, selected, id }: NodeProps) => {
+  const { nodeStatuses } = useArchitectStore();
+  const status = nodeStatuses[id] || { status: 'idle' };
+  
   const nameProperty = data.properties?.find(p => p.id === 'name');
   const typeProperty = data.properties?.find(p => p.id === 'type');
   const name = nameProperty?.value || data.label || 'Queue';
   const type = typeProperty?.value || 'Kafka';
 
+  const getStatusIcon = () => {
+    switch (status.status) {
+      case 'active':
+        return <CheckCircle className="h-3 w-3 text-status-active" />;
+      case 'error':
+        return <AlertCircle className="h-3 w-3 text-status-error" />;
+      case 'warning':
+        return <AlertTriangle className="h-3 w-3 text-status-warning" />;
+      default:
+        return null;
+    }
+  };
+
+  const getStatusBorder = () => {
+    switch (status.status) {
+      case 'active':
+        return 'border-status-active shadow-glow-active';
+      case 'error':
+        return 'border-status-error shadow-glow-error animate-pulse';
+      case 'warning':
+        return 'border-status-warning';
+      default:
+        return 'border-border hover:border-node-queue/50';
+    }
+  };
+
   return (
     <div className={`
       relative bg-card border-2 rounded-lg shadow-node transition-all duration-200
-      ${selected ? 'border-canvas-selection shadow-glow-active' : 'border-border hover:border-node-queue/50'}
+      ${selected ? 'border-canvas-selection shadow-glow-active' : getStatusBorder()}
       min-w-[140px] max-w-[200px]
     `}>
+      {/* Status Indicator */}
+      {status.status !== 'idle' && (
+        <div className="absolute -top-2 -right-2 z-10">
+          <div className="w-6 h-6 bg-card border-2 border-current rounded-full flex items-center justify-center">
+            {getStatusIcon()}
+          </div>
+        </div>
+      )}
+      
       <Handle
         type="target"
         position={Position.Left}
@@ -49,6 +89,20 @@ export const MessageQueueNode = memo(({ data, selected }: NodeProps) => {
             {type}
           </Badge>
         </div>
+        
+        {/* Metrics Display */}
+        {status.metrics && (
+          <div className="mt-2 pt-2 border-t border-border space-y-1">
+            <div className="flex justify-between text-xs">
+              <span className="text-muted-foreground">Messages:</span>
+              <span>{Math.floor(status.metrics.requests)}/s</span>
+            </div>
+            <div className="flex justify-between text-xs">
+              <span className="text-muted-foreground">Latency:</span>
+              <span>{status.metrics.latency.toFixed(0)}ms</span>
+            </div>
+          </div>
+        )}
       </div>
       
       <Handle

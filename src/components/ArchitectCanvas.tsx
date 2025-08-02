@@ -20,7 +20,7 @@ import { MessageQueueNode } from './nodes/MessageQueueNode';
 import { LoadBalancerNode } from './nodes/LoadBalancerNode';
 import { CacheNode } from './nodes/CacheNode';
 import { APIGatewayNode } from './nodes/APIGatewayNode';
-import { ArchitectEdge } from './edges/ArchitectEdge';
+import { EnhancedArchitectEdge } from './edges/EnhancedArchitectEdge';
 
 const nodeTypes = {
   'generic-service': GenericServiceNode,
@@ -32,7 +32,7 @@ const nodeTypes = {
 };
 
 const edgeTypes = {
-  'architech': ArchitectEdge,
+  'architech': EnhancedArchitectEdge,
 };
 
 export const ArchitectCanvas = () => {

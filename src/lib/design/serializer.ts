@@ -45,32 +45,71 @@ export const serializeDesign = (
     const serialized: SerializedDesign = {
       version: '1.0.0',
       nodes: nodes.map(node => ({
-        ...node,
-        // Ensure all necessary properties are included
         id: node.id,
         type: node.type || 'default',
         position: node.position,
-        data: node.data || {},
-        // Include any additional node properties
-        selected: node.selected || false,
-        dragging: false, // Reset dragging state
+        data: {
+          name: node.data?.name || node.data?.label || `${node.type}_${node.id}`,
+          // Convert properties array to object for backend
+          properties: Array.isArray(node.data?.properties) 
+            ? node.data.properties.reduce((acc: Record<string, any>, prop: any) => {
+                acc[prop.id || prop.name] = prop.value;
+                return acc;
+              }, {})
+            : node.data?.properties || {},
+          description: node.data?.description || '',
+          status: node.data?.status || 'idle',
+          // Preserve any other node data
+          ...Object.fromEntries(
+            Object.entries(node.data || {}).filter(([key]) => 
+              !['name', 'properties', 'description', 'status', 'label'].includes(key)
+            )
+          ),
+        },
+        // Include visual properties for reconstruction
+        style: node.style,
+        className: node.className,
+        hidden: node.hidden || false,
+        selected: false, // Reset selection state
+        dragging: false, // Reset interaction state
       })),
       edges: edges.map(edge => ({
-        ...edge,
-        // Ensure all necessary properties are included
         id: edge.id,
         source: edge.source,
         target: edge.target,
         sourceHandle: edge.sourceHandle,
         targetHandle: edge.targetHandle,
         type: edge.type || 'default',
-        data: edge.data || {},
-        selected: edge.selected || false,
+        data: {
+          name: edge.data?.name || `${edge.source}-to-${edge.target}`,
+          protocol: edge.data?.protocol || 'HTTP',
+          latency: edge.data?.latency || 0,
+          bandwidth: edge.data?.bandwidth || 1000,
+          errorRate: edge.data?.errorRate || 0,
+          description: edge.data?.description || '',
+          // Preserve other edge data
+          ...Object.fromEntries(
+            Object.entries(edge.data || {}).filter(([key]) => 
+              !['name', 'protocol', 'latency', 'bandwidth', 'errorRate', 'description'].includes(key)
+            )
+          ),
+        },
+        style: edge.style,
+        className: edge.className,
+        animated: edge.animated || false,
+        hidden: edge.hidden || false,
+        markerStart: edge.markerStart,
+        markerEnd: edge.markerEnd,
+        selected: false, // Reset selection state
       })),
       viewport,
       metadata: {
         created_at: new Date().toISOString(),
         updated_at: new Date().toISOString(),
+        canvas_size: {
+          width: Math.max(...nodes.map(n => n.position.x + 200), 1000),
+          height: Math.max(...nodes.map(n => n.position.y + 200), 600),
+        },
       },
     };
 
@@ -295,5 +334,85 @@ export const validateDesignData = (designData: any): {
   } catch (error) {
     errors.push('Validation failed due to unexpected error');
     return { isValid: false, errors };
+  }
+};
+
+/**
+ * Helper function to convert properties object to array format for UI
+ */
+export const convertPropertiesToArray = (properties: Record<string, any>, nodeType: string): any[] => {
+  const defaultProps = getDefaultPropertiesForType(nodeType);
+  
+  return defaultProps.map(defaultProp => ({
+    ...defaultProp,
+    value: properties[defaultProp.id] !== undefined ? properties[defaultProp.id] : defaultProp.value
+  }));
+};
+
+/**
+ * Get default properties for component type
+ */
+export const getDefaultPropertiesForType = (type: string): any[] => {
+  switch (type) {
+    case 'generic-service':
+      return [
+        { id: 'name', name: 'Service Name', type: 'string', value: 'New Service' },
+        { id: 'description', name: 'Description', type: 'textarea', value: '' },
+        { id: 'instanceCount', name: 'Instance Count', type: 'number', value: 1, min: 1, max: 100 },
+        { id: 'cpu', name: 'CPU (cores)', type: 'number', value: 1, min: 0.1, max: 16, step: 0.1 },
+        { id: 'memory', name: 'Memory (MB)', type: 'number', value: 512, min: 128, max: 16384 },
+        { id: 'requestPerSecond', name: 'Requests/sec', type: 'number', value: 100, min: 1, max: 10000 },
+        { id: 'latency', name: 'Latency (ms)', type: 'number', value: 100, min: 1, max: 5000 },
+        { id: 'errorRate', name: 'Error Rate (%)', type: 'number', value: 0, min: 0, max: 100 },
+      ];
+    case 'database':
+      return [
+        { id: 'name', name: 'Database Name', type: 'string', value: 'New Database' },
+        { id: 'description', name: 'Description', type: 'textarea', value: '' },
+        { id: 'type', name: 'Database Type', type: 'select', value: 'PostgreSQL', options: ['PostgreSQL', 'MongoDB', 'Redis', 'MySQL', 'Cassandra'] },
+        { id: 'readLatency', name: 'Read Latency (ms)', type: 'number', value: 50, min: 1, max: 1000 },
+        { id: 'writeLatency', name: 'Write Latency (ms)', type: 'number', value: 100, min: 1, max: 1000 },
+        { id: 'maxConnections', name: 'Max Connections', type: 'number', value: 100, min: 1, max: 1000 },
+        { id: 'storageCapacity', name: 'Storage (GB)', type: 'number', value: 100, min: 1, max: 10000 },
+      ];
+    case 'message-queue':
+      return [
+        { id: 'name', name: 'Queue Name', type: 'string', value: 'New Queue' },
+        { id: 'description', name: 'Description', type: 'textarea', value: '' },
+        { id: 'type', name: 'Queue Type', type: 'select', value: 'Kafka', options: ['Kafka', 'RabbitMQ', 'SQS', 'Redis'] },
+        { id: 'throughput', name: 'Throughput (msg/s)', type: 'number', value: 1000, min: 1, max: 100000 },
+        { id: 'latency', name: 'Latency (ms)', type: 'number', value: 10, min: 1, max: 1000 },
+        { id: 'retentionPeriod', name: 'Retention (hours)', type: 'number', value: 24, min: 1, max: 8760 },
+      ];
+    case 'load-balancer':
+      return [
+        { id: 'name', name: 'Load Balancer Name', type: 'string', value: 'New Load Balancer' },
+        { id: 'description', name: 'Description', type: 'textarea', value: '' },
+        { id: 'algorithm', name: 'Algorithm', type: 'select', value: 'RoundRobin', options: ['RoundRobin', 'LeastConnections', 'IPHash', 'Weighted'] },
+        { id: 'healthCheckInterval', name: 'Health Check (s)', type: 'number', value: 30, min: 1, max: 300 },
+        { id: 'maxConnections', name: 'Max Connections', type: 'number', value: 1000, min: 1, max: 100000 },
+      ];
+    case 'cache':
+      return [
+        { id: 'name', name: 'Cache Name', type: 'string', value: 'New Cache' },
+        { id: 'description', name: 'Description', type: 'textarea', value: '' },
+        { id: 'type', name: 'Cache Type', type: 'select', value: 'Redis', options: ['Redis', 'Memcached', 'In-Memory'] },
+        { id: 'capacity', name: 'Capacity (MB)', type: 'number', value: 1024, min: 1, max: 102400 },
+        { id: 'hitRate', name: 'Hit Rate (%)', type: 'number', value: 90, min: 0, max: 100 },
+        { id: 'evictionPolicy', name: 'Eviction Policy', type: 'select', value: 'LRU', options: ['LRU', 'LFU', 'FIFO', 'Random'] },
+      ];
+    case 'api-gateway':
+      return [
+        { id: 'name', name: 'Gateway Name', type: 'string', value: 'New API Gateway' },
+        { id: 'description', name: 'Description', type: 'textarea', value: '' },
+        { id: 'requestPerSecondLimit', name: 'Rate Limit (req/s)', type: 'number', value: 1000, min: 1, max: 100000 },
+        { id: 'authentication', name: 'Authentication', type: 'select', value: 'OAuth2', options: ['OAuth2', 'JWT', 'APIKey', 'None'] },
+        { id: 'rateLimiting', name: 'Rate Limiting', type: 'boolean', value: true },
+      ];
+    default:
+      return [
+        { id: 'name', name: 'Name', type: 'string', value: 'New Component' },
+        { id: 'description', name: 'Description', type: 'textarea', value: '' },
+      ];
   }
 };

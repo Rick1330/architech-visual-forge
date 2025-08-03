@@ -111,26 +111,40 @@ class ApiClient {
     }
   }
 
-  // User Management API
+  // User Management API (via API Gateway)
   async login(email: string, password: string) {
-    return this.request<{ token: string; user: any }>('/users/login', {
+    const result = await this.request<{ access_token: string; user: any }>('/users/login', {
       method: 'POST',
       body: { email, password },
     });
+    
+    // Set the auth token after successful login
+    if (result.access_token) {
+      this.setAuthToken(result.access_token);
+    }
+    
+    return result;
   }
 
   async register(userData: { email: string; password: string; name: string }) {
-    return this.request<{ token: string; user: any }>('/users/register', {
+    const result = await this.request<{ access_token: string; user: any }>('/users/register', {
       method: 'POST',
       body: userData,
     });
+    
+    // Set the auth token after successful registration
+    if (result.access_token) {
+      this.setAuthToken(result.access_token);
+    }
+    
+    return result;
   }
 
   async getCurrentUser() {
     return this.request<any>('/users/me');
   }
 
-  // Project Management API
+  // Project Management API (via API Gateway)
   async getProjects() {
     return this.request<any[]>('/projects');
   }
@@ -159,9 +173,9 @@ class ApiClient {
     });
   }
 
-  // Design Management API
+  // Design Management API (via API Gateway)
   async getDesigns(projectId?: string) {
-    const endpoint = projectId ? `/designs?project_id=${projectId}` : '/designs';
+    const endpoint = projectId ? `/designs/project/${projectId}` : '/designs';
     return this.request<any[]>(endpoint);
   }
 
@@ -198,16 +212,78 @@ class ApiClient {
     });
   }
 
-  // Simulation Management API
-  async createSimulationSession(designId: string, config?: any) {
+  // Design Version Management API
+  async createDesignVersion(designId: string, versionData?: { description?: string }) {
+    return this.request<any>(`/designs/${designId}/versions`, {
+      method: 'POST',
+      body: versionData || {},
+    });
+  }
+
+  // Component Management API (via API Gateway)
+  async getComponents(category?: string) {
+    const endpoint = category ? `/components?category=${category}` : '/components';
+    return this.request<any[]>(endpoint);
+  }
+
+  async getComponent(componentId: string) {
+    return this.request<any>(`/components/${componentId}`);
+  }
+
+  async createComponent(componentData: {
+    name: string;
+    type: string;
+    category: string;
+    description?: string;
+    properties_schema: any;
+    default_properties: any;
+    icon_url?: string;
+  }) {
+    return this.request<any>('/components', {
+      method: 'POST',
+      body: componentData,
+    });
+  }
+
+  async updateComponent(componentId: string, componentData: Partial<{
+    name: string;
+    type: string;
+    category: string;
+    description: string;
+    properties_schema: any;
+    default_properties: any;
+    icon_url: string;
+  }>) {
+    return this.request<any>(`/components/${componentId}`, {
+      method: 'PUT',
+      body: componentData,
+    });
+  }
+
+  async deleteComponent(componentId: string) {
+    return this.request<void>(`/components/${componentId}`, {
+      method: 'DELETE',
+    });
+  }
+
+  // Simulation Management API (via API Gateway)
+  async createSimulationSession(designId: string, name?: string, config?: any) {
     return this.request<{ session_id: string }>('/simulations', {
       method: 'POST',
-      body: { design_id: designId, config },
+      body: { 
+        design_id: designId, 
+        name: name || `Simulation ${new Date().toISOString()}`,
+        config: config || {}
+      },
     });
   }
 
   async getSimulationSession(sessionId: string) {
     return this.request<any>(`/simulations/${sessionId}`);
+  }
+
+  async getSimulationSessions() {
+    return this.request<any[]>('/simulations/sessions');
   }
 
   async startSimulation(sessionId: string) {
@@ -222,7 +298,25 @@ class ApiClient {
     });
   }
 
-  // AI Service API
+  async pauseSimulation(sessionId: string) {
+    return this.request<void>(`/simulations/${sessionId}/pause`, {
+      method: 'POST',
+    });
+  }
+
+  async resumeSimulation(sessionId: string) {
+    return this.request<void>(`/simulations/${sessionId}/resume`, {
+      method: 'POST',
+    });
+  }
+
+  async deleteSimulationSession(sessionId: string) {
+    return this.request<void>(`/simulations/${sessionId}`, {
+      method: 'DELETE',
+    });
+  }
+
+  // AI Service API (via API Gateway)
   async getAIRecommendations(designData: any) {
     return this.request<any>('/ai/recommendations', {
       method: 'POST',
@@ -230,14 +324,53 @@ class ApiClient {
     });
   }
 
-  // Observability API
-  async getMetrics(sessionId?: string) {
-    const endpoint = sessionId ? `/observability/metrics?session_id=${sessionId}` : '/observability/metrics';
+  async getAIOptimizations(designData: any) {
+    return this.request<any>('/ai/optimizations', {
+      method: 'POST',
+      body: { design_data: designData },
+    });
+  }
+
+  // Observability API (via API Gateway)
+  async getMetrics(sessionId?: string, componentId?: string) {
+    let endpoint = '/observability/metrics';
+    const params = new URLSearchParams();
+    
+    if (sessionId) params.append('session_id', sessionId);
+    if (componentId) params.append('component_id', componentId);
+    
+    if (params.toString()) {
+      endpoint += `?${params.toString()}`;
+    }
+    
     return this.request<any[]>(endpoint);
   }
 
-  async getLogs(sessionId?: string) {
-    const endpoint = sessionId ? `/observability/logs?session_id=${sessionId}` : '/observability/logs';
+  async getLogs(sessionId?: string, componentId?: string) {
+    let endpoint = '/observability/logs';
+    const params = new URLSearchParams();
+    
+    if (sessionId) params.append('session_id', sessionId);
+    if (componentId) params.append('component_id', componentId);
+    
+    if (params.toString()) {
+      endpoint += `?${params.toString()}`;
+    }
+    
+    return this.request<any[]>(endpoint);
+  }
+
+  async getTraces(sessionId?: string, componentId?: string) {
+    let endpoint = '/observability/traces';
+    const params = new URLSearchParams();
+    
+    if (sessionId) params.append('session_id', sessionId);
+    if (componentId) params.append('component_id', componentId);
+    
+    if (params.toString()) {
+      endpoint += `?${params.toString()}`;
+    }
+    
     return this.request<any[]>(endpoint);
   }
 }

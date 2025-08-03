@@ -197,7 +197,7 @@ describe('ApiClient', () => {
         json: () => Promise.resolve(mockResponse),
       });
 
-      const result = await apiClient.createSimulationSession(designId, config);
+      const result = await apiClient.createSimulationSession(designId, 'Test Simulation', config);
 
       expect(mockFetch).toHaveBeenCalledWith(
         expect.stringContaining('/simulations'),

@@ -80,8 +80,8 @@ export const useAuth = () => {
       const response = await apiClient.login(email, password);
       
       // Set auth token
-      apiClient.setAuthToken(response.token);
-      simulationWebSocket.setAuthToken(response.token);
+      apiClient.setAuthToken(response.access_token);
+      simulationWebSocket.setAuthToken(response.access_token);
       
       setAuthState({
         user: response.user,
@@ -128,8 +128,8 @@ export const useAuth = () => {
       const response = await apiClient.register(userData);
       
       // Set auth token
-      apiClient.setAuthToken(response.token);
-      simulationWebSocket.setAuthToken(response.token);
+      apiClient.setAuthToken(response.access_token);
+      simulationWebSocket.setAuthToken(response.access_token);
       
       setAuthState({
         user: response.user,

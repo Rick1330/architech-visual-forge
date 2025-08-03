@@ -1,19 +1,15 @@
-import { useState } from 'react';
 import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
 import { ProjectSwitcher } from '@/components/ProjectSwitcher';
+import { UserMenu } from '@/components/auth/UserMenu';
 import { 
   Save, 
   Upload, 
   Download, 
   Settings, 
-  User, 
   PanelLeftOpen, 
   PanelRightOpen,
   Layers,
-  FolderOpen,
-  Play,
-  Pause
+  FolderOpen
 } from 'lucide-react';
 import { useArchitectStore } from '@/stores/useArchitectStore';
 
@@ -22,13 +18,10 @@ export const AppHeader = () => {
     showComponentPalette, 
     showPropertyPanel, 
     currentProject,
-    simulation,
     toggleComponentPalette, 
     togglePropertyPanel,
     toggleProjectSwitcher,
-    saveProject,
-    startSimulation,
-    pauseSimulation
+    saveProject
   } = useArchitectStore();
 
   return (
@@ -57,27 +50,8 @@ export const AppHeader = () => {
         </Button>
       </div>
 
-      {/* Center: Simulation Control */}
+      {/* Center: Actions */}
       <div className="flex items-center gap-2">
-        <Button 
-          variant={simulation.isRunning ? "secondary" : "default"}
-          size="sm"
-          onClick={simulation.isRunning ? pauseSimulation : startSimulation}
-          className="flex items-center gap-2"
-        >
-          {simulation.isRunning ? (
-            <>
-              <Pause className="h-4 w-4" />
-              Pause
-            </>
-          ) : (
-            <>
-              <Play className="h-4 w-4" />
-              Simulate
-            </>
-          )}
-        </Button>
-        
         <Button variant="outline" size="sm" onClick={saveProject} className="hidden sm:flex">
           <Save className="h-4 w-4 mr-2" />
           Save
@@ -120,9 +94,7 @@ export const AppHeader = () => {
           <Settings className="h-4 w-4" />
         </Button>
         
-        <Button variant="outline" size="sm">
-          <User className="h-4 w-4" />
-        </Button>
+        <UserMenu />
       </div>
       
       <ProjectSwitcher />

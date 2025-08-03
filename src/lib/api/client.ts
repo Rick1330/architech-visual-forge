@@ -22,7 +22,7 @@ class ApiClient {
   private baseUrl: string;
   private authToken: string | null = null;
 
-  constructor(baseUrl = process.env.VITE_API_BASE_URL || 'http://localhost:8000/api/v1') {
+  constructor(baseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000/api/v1') {
     this.baseUrl = baseUrl;
     this.loadAuthToken();
   }

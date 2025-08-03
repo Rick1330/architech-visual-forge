@@ -1,8 +1,10 @@
-import { memo } from 'react';
+import { memo, useCallback } from 'react';
 import { Handle, Position } from '@xyflow/react';
 import { Server, AlertCircle, CheckCircle, AlertTriangle } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { useArchitectStore } from '@/stores/useArchitectStore';
+import { usePerformanceMonitor } from '@/hooks/usePerformanceMonitor';
+import { logger } from '@/lib/logger';
 
 interface NodeProps {
   data: {
@@ -52,11 +54,19 @@ export const GenericServiceNode = memo(({ data, selected, id }: NodeProps & { id
   };
 
   return (
-    <div className={`
-      relative bg-card border-2 rounded-lg shadow-node transition-all duration-200
-      ${selected ? 'border-canvas-selection shadow-glow-active' : getStatusBorder()}
-      min-w-[140px] max-w-[200px]
-    `}>
+    <div 
+      className={`
+        relative bg-card border-2 rounded-lg shadow-node transition-all duration-200 focus-within:ring-2 focus-within:ring-primary/20
+        ${selected ? 'border-canvas-selection shadow-glow-active' : getStatusBorder()}
+        min-w-[140px] max-w-[200px]
+      `}
+      role="button"
+      tabIndex={0}
+      aria-label={`Service node: ${name}, Status: ${status.status}`}
+      aria-describedby={`${id}-description`}
+      onFocus={() => handleNodeInteraction('node_focused')}
+      onBlur={() => handleNodeInteraction('node_blurred')}
+    >
       {/* Status Indicator */}
       {status.status !== 'idle' && (
         <div className="absolute -top-2 -right-2 z-10">

@@ -21,6 +21,15 @@ interface NodeProps {
 export const GenericServiceNode = memo(({ data, selected, id }: NodeProps & { id: string }) => {
   const { nodeStatuses } = useArchitectStore();
   const status = nodeStatuses[id] || { status: 'idle' };
+  const { getMetrics } = usePerformanceMonitor('GenericServiceNode');
+
+  // Log component interactions
+  const handleNodeInteraction = useCallback((action: string) => {
+    logger.userAction(action, 'GenericServiceNode', { 
+      nodeId: id,
+      nodeName: data.label 
+    });
+  }, [id, data.label]);
   
   const nameProperty = data.properties?.find(p => p.id === 'name');
   const instancesProperty = data.properties?.find(p => p.id === 'instanceCount');

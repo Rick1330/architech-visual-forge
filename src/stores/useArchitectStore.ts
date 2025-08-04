@@ -5,7 +5,7 @@ export interface ComponentProperty {
   id: string;
   name: string;
   type: 'string' | 'number' | 'boolean' | 'select' | 'textarea' | 'json' | 'slider' | 'code';
-  value: any;
+  value: string | number | boolean;
   options?: string[];
   min?: number;
   max?: number;
@@ -23,8 +23,8 @@ export interface ComponentType {
   category: 'service' | 'database' | 'messaging' | 'networking' | 'cache';
   icon: string;
   color: string;
-  properties_schema?: any; // JSON Schema for dynamic form generation
-  default_properties?: any; // Default property values
+  properties_schema?: Record<string, unknown>; // JSON Schema for dynamic form generation
+  default_properties?: Record<string, unknown>; // Default property values
   defaultProperties?: ComponentProperty[]; // Local default properties (deprecated)
 }
 
@@ -34,7 +34,7 @@ export interface SimulationEvent {
   type: 'info' | 'warning' | 'error' | 'success';
   componentId?: string;
   message: string;
-  data?: any;
+  data?: Record<string, unknown>;
 }
 
 export interface SimulationState {
@@ -108,14 +108,14 @@ interface ArchitectStore {
   setNodes: (nodes: Node[] | ((nodes: Node[]) => Node[])) => void;
   setEdges: (edges: Edge[] | ((edges: Edge[]) => Edge[])) => void;
   setComponentSchemas: (schemas: ComponentType[]) => void;
-  onNodesChange: (changes: any[]) => void;
-  onEdgesChange: (changes: any[]) => void;
+  onNodesChange: (changes: unknown[]) => void;
+  onEdgesChange: (changes: unknown[]) => void;
   onConnect: (connection: Connection) => void;
   
   selectNode: (nodeId: string | null) => void;
   selectEdge: (edgeId: string | null) => void;
   
-  updateNodeProperty: (nodeId: string, propertyId: string, value: any) => void;
+  updateNodeProperty: (nodeId: string, propertyId: string, value: string | number | boolean) => void;
   updateNodeStatus: (nodeId: string, status: NodeStatus) => void;
   
   // Auto-layout actions
@@ -211,7 +211,7 @@ export const useArchitectStore = create<ArchitectStore>((set, get) => ({
   onNodesChange: (changes) => {
     set((state) => ({
       nodes: state.nodes.map((node) => {
-        const change = changes.find((c) => c.id === node.id);
+        const change = changes.find((c: any) => c.id === node.id);
         if (change) {
           return { ...node, ...change };
         }
@@ -223,7 +223,7 @@ export const useArchitectStore = create<ArchitectStore>((set, get) => ({
   onEdgesChange: (changes) => {
     set((state) => ({
       edges: state.edges.map((edge) => {
-        const change = changes.find((c) => c.id === edge.id);
+        const change = changes.find((c: any) => c.id === edge.id);
         if (change) {
           return { ...edge, ...change };
         }

@@ -62,7 +62,8 @@ describe('useSimulation', () => {
       session_id: 'session-1',
     });
 
-    vi.mocked(require('@/lib/api/client').apiClient).createSimulationSession = mockCreateSession;
+    const { apiClient } = await import('@/lib/api/client');
+    vi.mocked(apiClient).createSimulationSession = mockCreateSession;
 
     const { result } = renderHook(() => useSimulation());
 
@@ -78,7 +79,8 @@ describe('useSimulation', () => {
     const mockError = new Error('Failed to create session');
     const mockCreateSession = vi.fn().mockRejectedValue(mockError);
 
-    vi.mocked(require('@/lib/api/client').apiClient).createSimulationSession = mockCreateSession;
+    const { apiClient } = await import('@/lib/api/client');
+    vi.mocked(apiClient).createSimulationSession = mockCreateSession;
 
     const { result } = renderHook(() => useSimulation());
 

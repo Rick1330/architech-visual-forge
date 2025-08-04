@@ -1,65 +1,67 @@
 # CI/CD Pipeline
 
-This document outlines the CI/CD pipeline for the Architech frontend application, configured using GitHub Actions.
+This document provides an overview of the CI/CD pipeline for the Architech frontend application. The pipeline is defined in the `.github/workflows/new-frontend-ci.yml` file.
 
-## Workflow Structure
+## Pipeline Triggers
 
-The CI/CD pipeline is defined in the `.github/workflows/new-frontend-ci.yml` file. It is triggered on every push to the `main` and `fix/ci-test-script` branches, and on every pull request to the `main` branch.
+The pipeline is triggered by the following events:
+
+-   **Push** to the `main` or `fix/ci-test-script` branches.
+-   **Pull request** to the `main` branch.
+
+## Pipeline Jobs
 
 The pipeline consists of the following jobs:
 
--   `test`: This job runs the test suite, which includes type checking, linting, and unit tests.
--   `docker-build`: This job builds the Docker image for the frontend application and pushes it to the GitHub Container Registry.
--   `e2e-tests`: This job runs the end-to-end tests using Playwright.
--   `deploy-staging`: This job deploys the application to the staging environment.
--   `deploy-production`: This job deploys the application to the production environment.
--   `security-scan`: This job runs a security scan using Trivy and uploads the results to the GitHub Security tab.
+### 1. Test Frontend (`test`)
 
-## Docker Build and Image Publishing
+This job runs on every trigger. It performs the following steps:
 
-The `docker-build` job builds the Docker image for the frontend application and pushes it to the GitHub Container Registry. The image is tagged with the branch name, the pull request number, and the commit SHA.
+-   Checks out the code.
+-   Sets up Node.js.
+-   Installs dependencies with `npm install`.
+-   Runs type checking with `npx tsc --noEmit`.
+-   Runs linting with `npm run lint`.
+-   Runs unit tests with `npm run test`.
+-   Builds the application with `npm run build`.
+-   Uploads the build artifacts.
 
-The Docker build process is defined in the `Dockerfile`. It uses a multi-stage build to create a small, optimized image.
+### 2. Build Docker Image (`docker-build`)
 
-## Security Scans
+This job runs after the `test` job completes successfully. It performs the following steps:
 
-The `security-scan` job runs a security scan using Trivy. Trivy is a simple and comprehensive vulnerability scanner for containers and other artifacts.
+-   Checks out the code.
+-   Sets up Docker Buildx.
+-   Logs in to the GitHub Container Registry.
+-   Logs in to Docker Hub using the `DOCKERHUB_USERNAME` and `DOCKERHUB_TOKEN` secrets.
+-   Extracts metadata for the Docker image.
+-   Builds and pushes the Docker image to the GitHub Container Registry.
 
-The job is configured to scan the filesystem of the repository for vulnerabilities. The results of the scan are uploaded to the GitHub Security tab, where they can be viewed and managed.
+**Note:** This job requires the `DOCKERHUB_USERNAME` and `DOCKERHUB_TOKEN` secrets to be set in the repository settings.
 
-## Merging Frontend and Backend CI/CD Workflows
+### 3. End-to-End Tests (`e2e-tests`)
 
-When migrating to a monorepo, the frontend and backend CI/CD workflows will need to be merged into a single workflow.
+This job runs after the `test` job completes successfully. It performs the following steps:
 
-The merged workflow should be structured in a modular way, with separate jobs for the frontend and backend applications. The jobs should be configured to only run when there are changes in the corresponding application directory.
+-   Checks out the code.
+-   Sets up Node.js.
+-   Installs dependencies with `npm install`.
+-   Installs Playwright browsers.
+-   Runs the Playwright E2E tests.
+-   Uploads the Playwright report.
 
-The following is an example of how the merged workflow could be structured:
+### 4. Deploy to Staging (`deploy-staging`)
 
-```yaml
-jobs:
-  frontend-test:
-    if: startsWith(github.ref, 'refs/heads/fix/') || (github.event_name == 'pull_request' && startsWith(github.head_ref, 'fix/'))
-    paths:
-      - 'apps/frontend/**'
-    ...
+This job runs after the `test` and `docker-build` jobs complete successfully. It is currently a placeholder and does not perform any actions.
 
-  backend-test:
-    if: startsWith(github.ref, 'refs/heads/fix/') || (github.event_name == 'pull_request' && startsWith(github.head_ref, 'fix/'))
-    paths:
-      - 'apps/backend/**'
-    ...
+### 5. Deploy to Production (`deploy-production`)
 
-  deploy-staging:
-    needs: [frontend-test, backend-test]
-    if: github.ref == 'refs/heads/develop'
-    ...
+This job runs after the `test` and `docker-build` jobs complete successfully. It is currently a placeholder and does not perform any actions.
 
-  deploy-production:
-    needs: [frontend-test, backend-test]
-    if: github.ref == 'refs/heads/main'
-    ...
-```
+### 6. Security Scan (`security-scan`)
 
-This workflow uses the `paths` filter to only run the `frontend-test` and `backend-test` jobs when there are changes in the `apps/frontend` and `apps/backend` directories, respectively.
+This job runs on every push and pull request. It performs the following steps:
 
-The `deploy-staging` and `deploy-production` jobs are configured to run after the `frontend-test` and `backend-test` jobs have completed successfully.
+-   Checks out the code.
+-   Runs a Trivy vulnerability scanner on the codebase.
+-   Uploads the scan results to the GitHub Security tab.

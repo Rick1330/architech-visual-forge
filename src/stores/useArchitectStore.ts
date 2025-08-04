@@ -23,7 +23,9 @@ export interface ComponentType {
   category: 'service' | 'database' | 'messaging' | 'networking' | 'cache';
   icon: string;
   color: string;
-  defaultProperties: ComponentProperty[];
+  properties_schema?: any; // JSON Schema for dynamic form generation
+  default_properties?: any; // Default property values
+  defaultProperties?: ComponentProperty[]; // Local default properties (deprecated)
 }
 
 export interface SimulationEvent {
@@ -74,6 +76,9 @@ interface ArchitectStore {
   selectedEdgeId: string | null;
   nodeStatuses: Record<string, NodeStatus>;
   
+  // Component schemas from backend
+  componentSchemas: ComponentType[];
+  
   // Simulation state
   simulation: SimulationState;
   
@@ -102,6 +107,7 @@ interface ArchitectStore {
   // Actions
   setNodes: (nodes: Node[] | ((nodes: Node[]) => Node[])) => void;
   setEdges: (edges: Edge[] | ((edges: Edge[]) => Edge[])) => void;
+  setComponentSchemas: (schemas: ComponentType[]) => void;
   onNodesChange: (changes: any[]) => void;
   onEdgesChange: (changes: any[]) => void;
   onConnect: (connection: Connection) => void;
@@ -150,6 +156,9 @@ export const useArchitectStore = create<ArchitectStore>((set, get) => ({
   selectedEdgeId: null,
   nodeStatuses: {},
   
+  // Component schemas from backend
+  componentSchemas: [],
+  
   simulation: {
     isRunning: false,
     currentTime: 0,
@@ -193,6 +202,10 @@ export const useArchitectStore = create<ArchitectStore>((set, get) => ({
     set((state) => ({
       edges: typeof edges === 'function' ? edges(state.edges) : edges,
     }));
+  },
+
+  setComponentSchemas: (schemas) => {
+    set({ componentSchemas: schemas });
   },
   
   onNodesChange: (changes) => {

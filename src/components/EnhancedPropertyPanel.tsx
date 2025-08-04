@@ -165,8 +165,18 @@ const EnhancedPropertyPanel = () => {
           <div className="space-y-2">
             <Label htmlFor={property.id}>{property.name}</Label>
             <CodeEditor
-              value={property.value || ''}
-              onChange={handleChange}
+              value={typeof property.value === 'string' ? property.value : JSON.stringify(property.value || {}, null, 2)}
+              onChange={(value) => {
+                if (property.type === 'json') {
+                  try {
+                    handleChange(JSON.parse(value));
+                  } catch {
+                    handleChange(value); // Keep as string if invalid JSON
+                  }
+                } else {
+                  handleChange(value);
+                }
+              }}
               language={property.type === 'json' ? 'json' : 'javascript'}
               placeholder={`Enter ${property.name.toLowerCase()}`}
               height="150px"

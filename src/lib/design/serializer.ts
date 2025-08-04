@@ -356,62 +356,63 @@ export const getDefaultPropertiesForType = (type: string): any[] => {
   switch (type) {
     case 'generic-service':
       return [
-        { id: 'name', name: 'Service Name', type: 'string', value: 'New Service' },
+        { id: 'name', name: 'Service Name', type: 'string', value: 'New Service', validation: { required: true } },
         { id: 'description', name: 'Description', type: 'textarea', value: '' },
         { id: 'instanceCount', name: 'Instance Count', type: 'number', value: 1, min: 1, max: 100 },
         { id: 'cpu', name: 'CPU (cores)', type: 'number', value: 1, min: 0.1, max: 16, step: 0.1 },
         { id: 'memory', name: 'Memory (MB)', type: 'number', value: 512, min: 128, max: 16384 },
         { id: 'requestPerSecond', name: 'Requests/sec', type: 'number', value: 100, min: 1, max: 10000 },
-        { id: 'latency', name: 'Latency (ms)', type: 'number', value: 100, min: 1, max: 5000 },
-        { id: 'errorRate', name: 'Error Rate (%)', type: 'number', value: 0, min: 0, max: 100 },
+        { id: 'latency', name: 'Latency (ms)', type: 'number', value: 50, min: 1, max: 5000 },
+        { id: 'errorRate', name: 'Error Rate (%)', type: 'slider', value: 1, min: 0, max: 100 },
       ];
     case 'database':
       return [
-        { id: 'name', name: 'Database Name', type: 'string', value: 'New Database' },
+        { id: 'name', name: 'Database Name', type: 'string', value: 'New Database', validation: { required: true } },
         { id: 'description', name: 'Description', type: 'textarea', value: '' },
         { id: 'type', name: 'Database Type', type: 'select', value: 'PostgreSQL', options: ['PostgreSQL', 'MongoDB', 'Redis', 'MySQL', 'Cassandra'] },
-        { id: 'readLatency', name: 'Read Latency (ms)', type: 'number', value: 50, min: 1, max: 1000 },
-        { id: 'writeLatency', name: 'Write Latency (ms)', type: 'number', value: 100, min: 1, max: 1000 },
-        { id: 'maxConnections', name: 'Max Connections', type: 'number', value: 100, min: 1, max: 1000 },
+        { id: 'readLatency', name: 'Read Latency (ms)', type: 'number', value: 5, min: 1, max: 1000 },
+        { id: 'writeLatency', name: 'Write Latency (ms)', type: 'number', value: 10, min: 1, max: 1000 },
+        { id: 'maxConnections', name: 'Max Connections', type: 'number', value: 100, min: 10, max: 10000 },
         { id: 'storageCapacity', name: 'Storage (GB)', type: 'number', value: 100, min: 1, max: 10000 },
+        { id: 'replicationFactor', name: 'Replication Factor', type: 'number', value: 3, min: 1, max: 10 },
       ];
     case 'message-queue':
       return [
-        { id: 'name', name: 'Queue Name', type: 'string', value: 'New Queue' },
+        { id: 'name', name: 'Queue Name', type: 'string', value: 'New Queue', validation: { required: true } },
         { id: 'description', name: 'Description', type: 'textarea', value: '' },
-        { id: 'type', name: 'Queue Type', type: 'select', value: 'Kafka', options: ['Kafka', 'RabbitMQ', 'SQS', 'Redis'] },
-        { id: 'throughput', name: 'Throughput (msg/s)', type: 'number', value: 1000, min: 1, max: 100000 },
-        { id: 'latency', name: 'Latency (ms)', type: 'number', value: 10, min: 1, max: 1000 },
+        { id: 'type', name: 'Queue Type', type: 'select', value: 'Kafka', options: ['Kafka', 'RabbitMQ', 'SQS', 'Redis Streams'] },
+        { id: 'throughput', name: 'Throughput (msg/s)', type: 'number', value: 1000, min: 1, max: 1000000 },
+        { id: 'latency', name: 'Latency (ms)', type: 'number', value: 5, min: 1, max: 1000 },
         { id: 'retentionPeriod', name: 'Retention (hours)', type: 'number', value: 24, min: 1, max: 8760 },
       ];
     case 'load-balancer':
       return [
-        { id: 'name', name: 'Load Balancer Name', type: 'string', value: 'New Load Balancer' },
+        { id: 'name', name: 'Load Balancer Name', type: 'string', value: 'New Load Balancer', validation: { required: true } },
         { id: 'description', name: 'Description', type: 'textarea', value: '' },
-        { id: 'algorithm', name: 'Algorithm', type: 'select', value: 'RoundRobin', options: ['RoundRobin', 'LeastConnections', 'IPHash', 'Weighted'] },
-        { id: 'healthCheckInterval', name: 'Health Check (s)', type: 'number', value: 30, min: 1, max: 300 },
-        { id: 'maxConnections', name: 'Max Connections', type: 'number', value: 1000, min: 1, max: 100000 },
+        { id: 'algorithm', name: 'Algorithm', type: 'select', value: 'RoundRobin', options: ['RoundRobin', 'LeastConnections', 'IPHash', 'WeightedRoundRobin'] },
+        { id: 'healthCheckInterval', name: 'Health Check (s)', type: 'number', value: 30, min: 5, max: 300 },
+        { id: 'backendServices', name: 'Backend Services', type: 'json', value: '[]' },
       ];
     case 'cache':
       return [
-        { id: 'name', name: 'Cache Name', type: 'string', value: 'New Cache' },
+        { id: 'name', name: 'Cache Name', type: 'string', value: 'New Cache', validation: { required: true } },
         { id: 'description', name: 'Description', type: 'textarea', value: '' },
         { id: 'type', name: 'Cache Type', type: 'select', value: 'Redis', options: ['Redis', 'Memcached', 'In-Memory'] },
-        { id: 'capacity', name: 'Capacity (MB)', type: 'number', value: 1024, min: 1, max: 102400 },
-        { id: 'hitRate', name: 'Hit Rate (%)', type: 'number', value: 90, min: 0, max: 100 },
-        { id: 'evictionPolicy', name: 'Eviction Policy', type: 'select', value: 'LRU', options: ['LRU', 'LFU', 'FIFO', 'Random'] },
+        { id: 'capacity', name: 'Capacity (MB)', type: 'number', value: 1024, min: 64, max: 65536 },
+        { id: 'hitRate', name: 'Hit Rate (%)', type: 'slider', value: 85, min: 0, max: 100 },
+        { id: 'evictionPolicy', name: 'Eviction Policy', type: 'select', value: 'LRU', options: ['LRU', 'LFU', 'FIFO', 'TTL'] },
       ];
     case 'api-gateway':
       return [
-        { id: 'name', name: 'Gateway Name', type: 'string', value: 'New API Gateway' },
+        { id: 'name', name: 'Gateway Name', type: 'string', value: 'New API Gateway', validation: { required: true } },
         { id: 'description', name: 'Description', type: 'textarea', value: '' },
-        { id: 'requestPerSecondLimit', name: 'Rate Limit (req/s)', type: 'number', value: 1000, min: 1, max: 100000 },
-        { id: 'authentication', name: 'Authentication', type: 'select', value: 'OAuth2', options: ['OAuth2', 'JWT', 'APIKey', 'None'] },
+        { id: 'requestPerSecondLimit', name: 'Request Limit (req/s)', type: 'number', value: 1000, min: 1, max: 100000 },
+        { id: 'authentication', name: 'Authentication', type: 'select', value: 'JWT', options: ['OAuth2', 'JWT', 'APIKey', 'None'] },
         { id: 'rateLimiting', name: 'Rate Limiting', type: 'boolean', value: true },
       ];
     default:
       return [
-        { id: 'name', name: 'Name', type: 'string', value: 'New Component' },
+        { id: 'name', name: 'Name', type: 'string', value: 'New Component', validation: { required: true } },
         { id: 'description', name: 'Description', type: 'textarea', value: '' },
       ];
   }

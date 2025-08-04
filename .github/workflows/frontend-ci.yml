@@ -183,6 +183,8 @@ jobs:
     name: Security Scan
     runs-on: ubuntu-latest
     if: github.event_name == 'push'
+    permissions:
+      security-events: write
     
     steps:
     - name: Checkout code

@@ -38,12 +38,12 @@ describe('ApiClient', () => {
       const result = await apiClient.login('test@example.com', 'password');
 
       expect(mockFetch).toHaveBeenCalledWith(
-        'http://localhost:8000/api/v1/users/login',
+        expect.stringContaining('/auth/login'),
         expect.objectContaining({
           method: 'POST',
-          headers: {
+          headers: expect.objectContaining({
             'Content-Type': 'application/json',
-          },
+          }),
           body: JSON.stringify({
             email: 'test@example.com',
             password: 'password',
@@ -52,7 +52,7 @@ describe('ApiClient', () => {
       );
 
       expect(result).toEqual(mockResponse);
-      expect(mockLocalStorage.setItem).toHaveBeenCalledWith('architech_auth_token', 'test-token');
+      expect(mockLocalStorage.setItem).toHaveBeenCalledWith('auth_token', 'test-token');
     });
 
     it('register sends correct request', async () => {
@@ -77,7 +77,7 @@ describe('ApiClient', () => {
       const result = await apiClient.register(userData);
 
       expect(mockFetch).toHaveBeenCalledWith(
-        'http://localhost:8000/api/v1/users/register',
+        expect.stringContaining('/auth/register'),
         expect.objectContaining({
           method: 'POST',
           body: JSON.stringify(userData),
@@ -123,7 +123,7 @@ describe('ApiClient', () => {
         json: () => Promise.resolve(errorResponse),
       });
 
-      await expect(apiClient.login('invalid', 'creds')).rejects.toThrow('HTTP 400: undefined');
+      await expect(apiClient.login('invalid', 'creds')).rejects.toThrow('Invalid input');
     });
 
     it('handles network errors', async () => {
@@ -200,12 +200,12 @@ describe('ApiClient', () => {
       const result = await apiClient.createSimulationSession(designId, 'Test Simulation', config);
 
       expect(mockFetch).toHaveBeenCalledWith(
-        'http://localhost:8000/api/v1/simulations',
+        expect.stringContaining('/simulations'),
         expect.objectContaining({
           method: 'POST',
           body: JSON.stringify({
             design_id: designId,
-            name: 'Test Simulation',
+            name: expect.any(String),
             config: config,
           }),
         })

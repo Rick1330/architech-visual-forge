@@ -113,14 +113,14 @@ class ApiClient {
 
   // User Management API (via API Gateway)
   async login(email: string, password: string) {
-    const result = await this.request<{ access_token: string; user: Record<string, unknown> }>('/users/login', {
+    const result = await this.request<{ data: { access_token: string; user: Record<string, unknown> } }>('/users/login', {
       method: 'POST',
       body: { email, password },
     });
     
     // Set the auth token after successful login
-    if (result.access_token) {
-      this.setAuthToken(result.access_token);
+    if (result.data.access_token) {
+      this.setAuthToken(result.data.access_token);
     }
     
     return result;

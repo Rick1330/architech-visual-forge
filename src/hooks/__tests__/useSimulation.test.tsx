@@ -71,7 +71,7 @@ describe('useSimulation', () => {
       await result.current.createSession('design-1');
     });
 
-    expect(mockCreateSession).toHaveBeenCalledWith('design-1', undefined);
+    expect(mockCreateSession).toHaveBeenCalledWith('design-1', undefined, undefined);
     expect(result.current.currentSession?.session_id).toBe('session-1');
   });
 

@@ -93,7 +93,7 @@ export const useSimulationEngine = () => {
     }, 1000 / simulation.speed); // Adjust interval based on speed
 
     return () => clearInterval(interval);
-  }, [simulation.isRunning, simulation.speed, simulation.currentTime, nodes, edges, setEdges]);
+  }, [simulation.isRunning, simulation.speed, simulation.currentTime, nodes, edges, setEdges, addSimulationEvent, setSimulationTime, updateNodeStatus, simulation.duration]);
 
   return null;
 };

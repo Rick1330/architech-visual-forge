@@ -19,6 +19,23 @@ interface SimulationSession {
   config?: Record<string, unknown>;
 }
 
+interface SimulationEventData {
+  event_type?: 'info' | 'warning' | 'error' | 'success';
+  message?: string;
+  component_id?: string;
+  data?: Record<string, unknown>;
+}
+
+interface SimulationMetricData {
+  component_id?: string;
+  component_type?: 'node' | 'edge';
+  status?: 'active' | 'inactive' | 'error';
+  cpu?: number;
+  memory?: number;
+  latency?: number;
+  metrics?: Record<string, unknown>;
+}
+
 export const useSimulation = () => {
   const [currentSession, setCurrentSession] = useState<SimulationSession | null>(null);
   const [isConnecting, setIsConnecting] = useState(false);
@@ -63,41 +80,44 @@ export const useSimulation = () => {
         break;
 
       case 'simulation_event':
+        const eventData = message.data as SimulationEventData;
         addSimulationEvent({
           time: Date.now(),
-          type: message.data.event_type || 'info',
-          message: message.data.message || 'Simulation event',
-          componentId: message.data.component_id,
-          data: message.data
+          type: eventData.event_type || 'info',
+          message: eventData.message || 'Simulation event',
+          componentId: eventData.component_id,
+          data: eventData.data
         });
         break;
 
       case 'simulation_metric':
-        if (message.data.component_id && message.data.component_type === 'node') {
-          updateNodeStatus(message.data.component_id, {
-            status: message.data.status || 'active',
+        const metricData = message.data as SimulationMetricData;
+        if (metricData.component_id && metricData.component_type === 'node') {
+          updateNodeStatus(metricData.component_id, {
+            status: metricData.status || 'active',
             metrics: {
-              cpu: message.data.cpu || 0,
-              memory: message.data.memory || 0,
-              latency: message.data.latency || 0,
-              ...message.data.metrics
+              cpu: metricData.cpu || 0,
+              memory: metricData.memory || 0,
+              latency: metricData.latency || 0,
+              ...(metricData.metrics || {})
             }
           });
-        } else if (message.data.component_id && message.data.component_type === 'edge') {
+        } else if (metricData.component_id && metricData.component_type === 'edge') {
           // Edge status updates would need to be implemented in the store
           // For now, just log the event
           logger.debug('Edge status update received', {
             componentName: 'useSimulation',
-            payload: { edgeId: message.data.component_id, status: message.data.status }
+            payload: { edgeId: metricData.component_id, status: metricData.status }
           });
         }
         break;
 
       case 'error':
+        const errorData = message.data as { message?: string };
         toast({
           variant: 'destructive',
           title: 'Simulation Error',
-          description: message.data.message || 'An error occurred during simulation.',
+          description: errorData.message || 'An error occurred during simulation.',
         });
         break;
 
@@ -136,7 +156,7 @@ export const useSimulation = () => {
       return session;
     } catch (error) {
       const appError = errorHandler.handleError(
-        error instanceof Error ? error : new Error('Failed to create simulation session'),
+        error as Error,
         'useSimulation'
       );
       
@@ -201,7 +221,7 @@ export const useSimulation = () => {
       setCurrentSession(prev => prev ? { ...prev, status: 'running' } : null);
     } catch (error) {
       const appError = errorHandler.handleError(
-        error instanceof Error ? error : new Error('Failed to start simulation'),
+        error as Error,
         'useSimulation'
       );
       
@@ -233,7 +253,7 @@ export const useSimulation = () => {
       setCurrentSession(prev => prev ? { ...prev, status: 'stopped' } : null);
     } catch (error) {
       const appError = errorHandler.handleError(
-        error instanceof Error ? error : new Error('Failed to stop simulation'),
+        error as Error,
         'useSimulation'
       );
       

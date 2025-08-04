@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import { Node, Edge, Connection } from '@xyflow/react';
+import { Node, Edge, Connection, NodeChange, EdgeChange } from '@xyflow/react';
 
 export interface ComponentProperty {
   id: string;
@@ -211,7 +211,7 @@ export const useArchitectStore = create<ArchitectStore>((set, get) => ({
   onNodesChange: (changes) => {
     set((state) => ({
       nodes: state.nodes.map((node) => {
-        const change = changes.find((c: any) => c.id === node.id);
+        const change = changes.find((c: NodeChange) => 'id' in c && c.id === node.id);
         if (change && typeof change === 'object') {
           return { ...node, ...change };
         }
@@ -223,7 +223,7 @@ export const useArchitectStore = create<ArchitectStore>((set, get) => ({
   onEdgesChange: (changes) => {
     set((state) => ({
       edges: state.edges.map((edge) => {
-        const change = changes.find((c: any) => c.id === edge.id);
+        const change = changes.find((c: EdgeChange) => 'id' in c && c.id === edge.id);
         if (change && typeof change === 'object') {
           return { ...edge, ...change };
         }

@@ -11,7 +11,14 @@ interface ComponentCardProps {
     icon: string;
     color: string;
   };
-  onDragStart: (e: React.DragEvent, component: any) => void;
+  onDragStart: (e: React.DragEvent, component: {
+    id: string;
+    name: string;
+    description: string;
+    category: string;
+    icon: string;
+    color: string;
+  }) => void;
   isFavorite: boolean;
   onToggleFavorite: (id: string) => void;
 }

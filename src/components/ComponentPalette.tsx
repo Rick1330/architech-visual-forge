@@ -11,7 +11,7 @@ interface ComponentItem {
   name: string;
   description: string;
   category: string;
-  icon: React.ComponentType<any>;
+  icon: React.ComponentType<{ className?: string }>;
   nodeType: string;
   color: string;
 }

@@ -53,7 +53,7 @@ const EnhancedPropertyPanel = () => {
   };
 
   const renderPropertyInput = (property: ComponentProperty) => {
-    const handleChange = (value: any) => {
+    const handleChange = (value: string | number | boolean) => {
       if (selectedNodeId) {
         updateNodeProperty(selectedNodeId, property.id, value);
       }

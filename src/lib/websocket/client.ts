@@ -10,7 +10,7 @@ export interface SimulationMessage {
   type: 'simulation_started' | 'simulation_stopped' | 'simulation_event' | 'simulation_metric' | 'error';
   session_id: string;
   timestamp: string;
-  data: any;
+  data: Record<string, unknown>;
 }
 
 export interface WebSocketConfig {
@@ -156,7 +156,7 @@ class SimulationWebSocketClient {
   /**
    * Send message to WebSocket
    */
-  send(message: any) {
+  send(message: Record<string, unknown>) {
     if (this.ws && this.ws.readyState === WebSocket.OPEN) {
       this.ws.send(JSON.stringify(message));
       logger.debug('WebSocket message sent', {

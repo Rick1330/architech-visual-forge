@@ -11,6 +11,8 @@ import {
   Edge,
   Node,
   ReactFlowInstance,
+  NodeChange,
+  EdgeChange,
 } from '@xyflow/react';
 import '@xyflow/react/dist/style.css';
 import { useArchitectStore } from '@/stores/useArchitectStore';
@@ -69,7 +71,7 @@ export const ArchitectCanvas = () => {
   const [reactFlowEdges, setReactFlowEdges, onEdgesChange] = useEdgesState(edges);
 
   // Sync store with React Flow with logging
-  const handleNodesChange = useCallback((changes: any[]) => {
+  const handleNodesChange = useCallback((changes: NodeChange[]) => {
     try {
       onNodesChange(changes);
       setNodes(reactFlowNodes);
@@ -88,7 +90,7 @@ export const ArchitectCanvas = () => {
     }
   }, [onNodesChange, setNodes, reactFlowNodes]);
 
-  const handleEdgesChange = useCallback((changes: any[]) => {
+  const handleEdgesChange = useCallback((changes: EdgeChange[]) => {
     onEdgesChange(changes);
     setEdges(reactFlowEdges);
   }, [onEdgesChange, setEdges, reactFlowEdges]);

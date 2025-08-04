@@ -1,5 +1,5 @@
 import { memo } from 'react';
-import { BaseEdge, EdgeLabelRenderer, getBezierPath, useReactFlow } from '@xyflow/react';
+import { BaseEdge, EdgeLabelRenderer, getBezierPath, useReactFlow, Position } from '@xyflow/react';
 import { useArchitectStore } from '@/stores/useArchitectStore';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -18,8 +18,8 @@ interface ArchitectEdgeProps {
   sourceY: number;
   targetX: number;
   targetY: number;
-  sourcePosition: any;
-  targetPosition: any;
+  sourcePosition: Position;
+  targetPosition: Position;
   style?: React.CSSProperties;
   markerEnd?: string;
   data?: {

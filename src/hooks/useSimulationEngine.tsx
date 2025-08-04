@@ -61,7 +61,7 @@ export const useSimulationEngine = () => {
             type: randomStatus === 'error' ? 'error' : 'warning',
             componentId: node.id,
             message: `Component ${Array.isArray(node.data?.properties) && 
-                     node.data.properties.find((p: any) => p.id === 'name')?.value || node.id} status: ${randomStatus}`,
+                     node.data.properties.find((p: { id: string; value: string | number | boolean }) => p.id === 'name')?.value || node.id} status: ${randomStatus}`,
           });
         }
       });

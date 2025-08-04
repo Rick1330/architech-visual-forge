@@ -92,7 +92,7 @@ export function usePerformanceMonitor(componentName: string) {
 export function useAsyncPerformanceMonitor(operationName: string) {
   const measureAsync = useCallback(async <T>(
     operation: () => Promise<T>,
-    context?: Record<string, any>
+    context?: Record<string, unknown>
   ): Promise<T> => {
     const startTime = performance.now();
     

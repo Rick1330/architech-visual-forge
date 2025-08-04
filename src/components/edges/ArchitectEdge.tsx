@@ -5,6 +5,7 @@ import {
   getBezierPath,
   useReactFlow,
   Edge,
+  Position,
 } from '@xyflow/react';
 
 interface EdgeProps {
@@ -13,8 +14,8 @@ interface EdgeProps {
   sourceY: number;
   targetX: number;
   targetY: number;
-  sourcePosition: any;
-  targetPosition: any;
+  sourcePosition: Position;
+  targetPosition: Position;
   style?: React.CSSProperties;
   markerEnd?: string;
   selected?: boolean;

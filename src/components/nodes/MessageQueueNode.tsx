@@ -10,7 +10,7 @@ interface NodeProps {
     properties: Array<{
       id: string;
       name: string;
-      value: any;
+      value: string | number | boolean;
     }>;
   };
   selected?: boolean;

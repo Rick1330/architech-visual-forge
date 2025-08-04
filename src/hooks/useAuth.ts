@@ -9,14 +9,7 @@ import { simulationWebSocket } from '@/lib/websocket/client';
 import { logger } from '@/lib/logger';
 import { errorHandler, ErrorType } from '@/lib/errorHandler';
 import { useToast } from '@/hooks/use-toast';
-
-interface User {
-  id: string;
-  email: string;
-  name: string;
-  created_at: string;
-  updated_at: string;
-}
+import { User } from '@/types';
 
 interface AuthState {
   user: User | null;
@@ -38,7 +31,8 @@ export const useAuth = () => {
   useEffect(() => {
     const initAuth = async () => {
       try {
-        const user = await apiClient.getCurrentUser();
+        const userData = await apiClient.getCurrentUser();
+        const user = userData as unknown as User;
         setAuthState({
           user,
           isAuthenticated: true,
@@ -78,28 +72,29 @@ export const useAuth = () => {
       setAuthState(prev => ({ ...prev, isLoading: true }));
       
       const response = await apiClient.login(email, password);
+      const user = response.user as unknown as User;
       
       // Set auth token
       apiClient.setAuthToken(response.access_token);
       simulationWebSocket.setAuthToken(response.access_token);
       
       setAuthState({
-        user: response.user,
+        user,
         isAuthenticated: true,
         isLoading: false,
       });
       
       // Set user ID for logging
-      logger.setUserId(response.user.id);
+      logger.setUserId(user.id);
       
-      logger.userAction('login', 'useAuth', { userId: response.user.id });
+      logger.userAction('login', 'useAuth', { userId: user.id });
       
       toast({
         title: 'Welcome back!',
-        description: `Successfully logged in as ${response.user.name}`,
+        description: `Successfully logged in as ${user.name}`,
       });
       
-      return response.user;
+      return user;
     } catch (error) {
       setAuthState(prev => ({ ...prev, isLoading: false }));
       
@@ -126,28 +121,29 @@ export const useAuth = () => {
       setAuthState(prev => ({ ...prev, isLoading: true }));
       
       const response = await apiClient.register(userData);
+      const user = response.user as unknown as User;
       
       // Set auth token
       apiClient.setAuthToken(response.access_token);
       simulationWebSocket.setAuthToken(response.access_token);
       
       setAuthState({
-        user: response.user,
+        user,
         isAuthenticated: true,
         isLoading: false,
       });
       
       // Set user ID for logging
-      logger.setUserId(response.user.id);
+      logger.setUserId(user.id);
       
-      logger.userAction('register', 'useAuth', { userId: response.user.id });
+      logger.userAction('register', 'useAuth', { userId: user.id });
       
       toast({
         title: 'Account Created!',
-        description: `Welcome to Architech, ${response.user.name}!`,
+        description: `Welcome to Architech, ${user.name}!`,
       });
       
-      return response.user;
+      return user;
     } catch (error) {
       setAuthState(prev => ({ ...prev, isLoading: false }));
       
@@ -194,7 +190,8 @@ export const useAuth = () => {
     try {
       if (!authState.isAuthenticated) return;
       
-      const user = await apiClient.getCurrentUser();
+      const userData = await apiClient.getCurrentUser();
+      const user = userData as unknown as User;
       setAuthState(prev => ({ ...prev, user }));
       
       logger.userAction('refresh_user', 'useAuth', { userId: user.id });

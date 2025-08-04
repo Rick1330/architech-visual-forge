@@ -21,7 +21,7 @@ export interface AppError {
   type: ErrorType;
   message: string;
   code?: string;
-  details?: Record<string, any>;
+  details?: Record<string, unknown>;
   componentName?: string;
   timestamp: string;
   userFriendlyMessage?: string;
@@ -36,7 +36,7 @@ class ErrorHandler {
     message: string,
     options: {
       code?: string;
-      details?: Record<string, any>;
+      details?: Record<string, unknown>;
       componentName?: string;
       userFriendlyMessage?: string;
     } = {}
@@ -121,7 +121,7 @@ class ErrorHandler {
   }
 
   // Validation helpers
-  validateInput(value: any, rules: ValidationRule[]): ValidationResult {
+  validateInput(value: unknown, rules: ValidationRule[]): ValidationResult {
     const errors: string[] = [];
 
     for (const rule of rules) {
@@ -137,7 +137,7 @@ class ErrorHandler {
   }
 
   // Network error helpers
-  handleNetworkError(error: any, endpoint?: string): AppError {
+  handleNetworkError(error: Error & { response?: { status: number; data: unknown }; request?: unknown }, endpoint?: string): AppError {
     if (error.response) {
       // Server responded with error status
       return this.createError(
@@ -182,7 +182,7 @@ class ErrorHandler {
 }
 
 export interface ValidationRule {
-  validator: (value: any) => boolean;
+  validator: (value: unknown) => boolean;
   message: string;
 }
 
@@ -196,9 +196,9 @@ export const errorHandler = new ErrorHandler();
 // React Error Boundary Helper
 import React from 'react';
 
-export const withErrorBoundary = (Component: React.ComponentType<any>) => {
-  return class ErrorBoundary extends React.Component<any, { hasError: boolean }> {
-    constructor(props: any) {
+export const withErrorBoundary = (Component: React.ComponentType<Record<string, unknown>>) => {
+  return class ErrorBoundary extends React.Component<Record<string, unknown>, { hasError: boolean }> {
+    constructor(props: Record<string, unknown>) {
       super(props);
       this.state = { hasError: false };
     }

@@ -13,12 +13,20 @@ export interface ComponentType {
 }
 
 export interface ComponentProperty {
+  id: string;
   name: string;
-  type: 'string' | 'number' | 'boolean' | 'select' | 'array';
-  value: unknown;
+  type: 'string' | 'number' | 'boolean' | 'select' | 'textarea' | 'slider' | 'json';
+  value: string | number | boolean;
+  min?: number;
+  max?: number;
+  step?: number;
   options?: string[];
-  required?: boolean;
-  description?: string;
+  validation?: {
+    required?: boolean;
+    min?: number;
+    max?: number;
+    pattern?: string;
+  };
 }
 
 // Node Types
@@ -172,8 +180,9 @@ export interface StoreActions {
 export interface User {
   id: string;
   email: string;
-  name?: string;
-  avatar?: string;
+  name: string;
+  created_at: string;
+  updated_at: string;
 }
 
 export interface AuthState {

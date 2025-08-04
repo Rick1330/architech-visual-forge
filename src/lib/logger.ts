@@ -17,7 +17,7 @@ export interface LogContext {
   sessionId: string;
   componentName?: string;
   action?: string;
-  payload?: Record<string, any>;
+  payload?: Record<string, unknown>;
   errorDetails?: {
     message: string;
     stack?: string;
@@ -104,7 +104,7 @@ class Logger {
   }
 
   // Specific logging methods for common actions
-  userAction(action: string, componentName: string, payload?: Record<string, any>) {
+  userAction(action: string, componentName: string, payload?: Record<string, unknown>) {
     this.info('User action performed', {
       componentName,
       action,
@@ -131,13 +131,13 @@ class Logger {
 export const logger = new Logger();
 
 // Error boundary logger
-export const logError = (error: Error, componentName?: string, context?: Record<string, any>) => {
+export const logError = (error: Error, componentName?: string, context?: Record<string, unknown>) => {
   logger.error('Unhandled error occurred', {
     componentName,
     errorDetails: {
       message: error.message,
       stack: error.stack,
-      code: (error as any).code
+      code: (error as Error & { code?: string }).code
     },
     payload: context
   });

@@ -16,7 +16,7 @@ interface SimulationSession {
   design_id: string;
   status: 'created' | 'running' | 'stopped' | 'error';
   created_at: string;
-  config?: any;
+  config?: Record<string, unknown>;
 }
 
 export const useSimulation = () => {
@@ -112,11 +112,11 @@ export const useSimulation = () => {
   /**
    * Create simulation session
    */
-  const createSession = useCallback(async (designId: string, config?: any) => {
+  const createSession = useCallback(async (designId: string, config?: Record<string, unknown>) => {
     try {
       logger.userAction('create_simulation_session', 'useSimulation', { designId });
       
-      const response = await apiClient.createSimulationSession(designId, config);
+      const response = await apiClient.createSimulationSession(designId, undefined, config);
       const session: SimulationSession = {
         session_id: response.session_id,
         design_id: designId,

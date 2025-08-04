@@ -6,6 +6,7 @@
 import { Node, Edge } from '@xyflow/react';
 import { logger } from '@/lib/logger';
 import { errorHandler, ErrorType } from '@/lib/errorHandler';
+import { ComponentProperty } from '@/types';
 
 export interface SerializedDesign {
   version: string;
@@ -29,8 +30,8 @@ export interface SerializedDesign {
 export interface ComponentSchema {
   id: string;
   type: string;
-  properties_schema: any; // JSON Schema
-  default_properties: Record<string, any>;
+  properties_schema: Record<string, unknown>; // JSON Schema
+  default_properties: Record<string, unknown>;
 }
 
 /**
@@ -52,7 +53,7 @@ export const serializeDesign = (
           name: node.data?.name || node.data?.label || `${node.type}_${node.id}`,
           // Convert properties array to object for backend
           properties: Array.isArray(node.data?.properties) 
-            ? node.data.properties.reduce((acc: Record<string, any>, prop: any) => {
+            ? node.data.properties.reduce((acc: Record<string, unknown>, prop: { id?: string; name?: string; value: unknown }) => {
                 acc[prop.id || prop.name] = prop.value;
                 return acc;
               }, {})
@@ -141,7 +142,7 @@ export const serializeDesign = (
 /**
  * Deserialize design_data to canvas state
  */
-export const deserializeDesign = (designData: any): {
+export const deserializeDesign = (designData: Record<string, unknown>): {
   nodes: Node[];
   edges: Edge[];
   viewport: { x: number; y: number; zoom: number };
@@ -158,7 +159,7 @@ export const deserializeDesign = (designData: any): {
 
     // If it's already in the new format
     if (designData.version) {
-      const serialized = designData as SerializedDesign;
+      const serialized = designData as unknown as SerializedDesign;
       
       logger.info('Design deserialized successfully', {
         componentName: 'designSerializer',
@@ -180,7 +181,7 @@ export const deserializeDesign = (designData: any): {
     // Handle legacy format
     const nodes = Array.isArray(designData.nodes) ? designData.nodes : [];
     const edges = Array.isArray(designData.edges) ? designData.edges : [];
-    const viewport = designData.viewport || { x: 0, y: 0, zoom: 1 };
+    const viewport = (designData.viewport as { x: number; y: number; zoom: number }) || { x: 0, y: 0, zoom: 1 };
 
     logger.warn('Legacy design format detected, migrating', {
       componentName: 'designSerializer',
@@ -219,24 +220,43 @@ export const generatePropertyForm = (componentSchema: ComponentSchema): {
     type: string;
     label: string;
     required: boolean;
-    defaultValue: any;
-    options?: any[];
-    validation?: any;
+    defaultValue: unknown;
+    options?: unknown[];
+    validation?: Record<string, unknown>;
   }>;
 } => {
   try {
-    const fields: any[] = [];
-    const schema = componentSchema.properties_schema;
+    const fields: Array<{
+      name: string;
+      type: string;
+      label: string;
+      required: boolean;
+      defaultValue: unknown;
+      options?: unknown[];
+      validation?: Record<string, unknown>;
+    }> = [];
+    const schema = componentSchema.properties_schema as { 
+      properties?: Record<string, { 
+        type?: string; 
+        title?: string; 
+        default?: unknown; 
+        enum?: unknown[]; 
+        minimum?: number; 
+        maximum?: number; 
+        pattern?: string; 
+      }>; 
+      required?: string[];
+    };
     const defaults = componentSchema.default_properties;
 
     if (schema && schema.properties) {
-      Object.entries(schema.properties).forEach(([key, property]: [string, any]) => {
+      Object.entries(schema.properties).forEach(([key, property]) => {
         fields.push({
           name: key,
           type: property.type || 'string',
           label: property.title || key,
-          required: schema.required?.includes(key) || false,
-          defaultValue: defaults[key] || property.default,
+          required: (schema.required || []).includes(key),
+          defaultValue: defaults[key] || property.default || '',
           options: property.enum || undefined,
           validation: {
             min: property.minimum,
@@ -274,7 +294,7 @@ export const generatePropertyForm = (componentSchema: ComponentSchema): {
 /**
  * Validate design data
  */
-export const validateDesignData = (designData: any): {
+export const validateDesignData = (designData: Record<string, unknown>): {
   isValid: boolean;
   errors: string[];
 } => {
@@ -290,11 +310,12 @@ export const validateDesignData = (designData: any): {
     if (designData.nodes && !Array.isArray(designData.nodes)) {
       errors.push('Nodes must be an array');
     } else if (designData.nodes) {
-      designData.nodes.forEach((node: any, index: number) => {
-        if (!node.id) {
+      (designData.nodes as unknown[]).forEach((node: unknown, index: number) => {
+        const nodeObj = node as Record<string, unknown>;
+        if (!nodeObj.id) {
           errors.push(`Node at index ${index} missing required 'id' field`);
         }
-        if (!node.position) {
+        if (!nodeObj.position) {
           errors.push(`Node at index ${index} missing required 'position' field`);
         }
       });
@@ -304,14 +325,15 @@ export const validateDesignData = (designData: any): {
     if (designData.edges && !Array.isArray(designData.edges)) {
       errors.push('Edges must be an array');
     } else if (designData.edges) {
-      designData.edges.forEach((edge: any, index: number) => {
-        if (!edge.id) {
+      (designData.edges as unknown[]).forEach((edge: unknown, index: number) => {
+        const edgeObj = edge as Record<string, unknown>;
+        if (!edgeObj.id) {
           errors.push(`Edge at index ${index} missing required 'id' field`);
         }
-        if (!edge.source) {
+        if (!edgeObj.source) {
           errors.push(`Edge at index ${index} missing required 'source' field`);
         }
-        if (!edge.target) {
+        if (!edgeObj.target) {
           errors.push(`Edge at index ${index} missing required 'target' field`);
         }
       });
@@ -325,8 +347,8 @@ export const validateDesignData = (designData: any): {
       payload: {
         isValid,
         errorCount: errors.length,
-        nodeCount: designData.nodes?.length || 0,
-        edgeCount: designData.edges?.length || 0
+        nodeCount: Array.isArray(designData.nodes) ? designData.nodes.length : 0,
+        edgeCount: Array.isArray(designData.edges) ? designData.edges.length : 0
       }
     });
 
@@ -340,19 +362,19 @@ export const validateDesignData = (designData: any): {
 /**
  * Helper function to convert properties object to array format for UI
  */
-export const convertPropertiesToArray = (properties: Record<string, any>, nodeType: string): any[] => {
+export const convertPropertiesToArray = (properties: Record<string, unknown>, nodeType: string): ComponentProperty[] => {
   const defaultProps = getDefaultPropertiesForType(nodeType);
   
   return defaultProps.map(defaultProp => ({
     ...defaultProp,
-    value: properties[defaultProp.id] !== undefined ? properties[defaultProp.id] : defaultProp.value
+    value: (properties[defaultProp.id] !== undefined ? properties[defaultProp.id] : defaultProp.value) as string | number | boolean
   }));
 };
 
 /**
  * Get default properties for component type
  */
-export const getDefaultPropertiesForType = (type: string): any[] => {
+export const getDefaultPropertiesForType = (type: string): ComponentProperty[] => {
   switch (type) {
     case 'generic-service':
       return [

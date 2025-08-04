@@ -6,7 +6,7 @@
 import { logger } from '@/lib/logger';
 import { errorHandler, ErrorType } from '@/lib/errorHandler';
 
-interface ApiResponse<T = any> {
+interface ApiResponse<T = unknown> {
   data?: T;
   error?: string;
   message?: string;
@@ -15,7 +15,7 @@ interface ApiResponse<T = any> {
 interface RequestConfig {
   method?: 'GET' | 'POST' | 'PUT' | 'DELETE' | 'PATCH';
   headers?: Record<string, string>;
-  body?: any;
+  body?: unknown;
 }
 
 class ApiClient {
@@ -113,7 +113,7 @@ class ApiClient {
 
   // User Management API (via API Gateway)
   async login(email: string, password: string) {
-    const result = await this.request<{ access_token: string; user: any }>('/users/login', {
+    const result = await this.request<{ access_token: string; user: Record<string, unknown> }>('/users/login', {
       method: 'POST',
       body: { email, password },
     });
@@ -127,7 +127,7 @@ class ApiClient {
   }
 
   async register(userData: { email: string; password: string; name: string }) {
-    const result = await this.request<{ access_token: string; user: any }>('/users/register', {
+    const result = await this.request<{ access_token: string; user: Record<string, unknown> }>('/users/register', {
       method: 'POST',
       body: userData,
     });
@@ -141,27 +141,27 @@ class ApiClient {
   }
 
   async getCurrentUser() {
-    return this.request<any>('/users/me');
+    return this.request<Record<string, unknown>>('/users/me');
   }
 
   // Project Management API (via API Gateway)
   async getProjects() {
-    return this.request<any[]>('/projects');
+    return this.request<Record<string, unknown>[]>('/projects');
   }
 
   async getProject(projectId: string) {
-    return this.request<any>(`/projects/${projectId}`);
+    return this.request<Record<string, unknown>>(`/projects/${projectId}`);
   }
 
   async createProject(projectData: { name: string; description?: string }) {
-    return this.request<any>('/projects', {
+    return this.request<Record<string, unknown>>('/projects', {
       method: 'POST',
       body: projectData,
     });
   }
 
   async updateProject(projectId: string, projectData: Partial<{ name: string; description: string }>) {
-    return this.request<any>(`/projects/${projectId}`, {
+    return this.request<Record<string, unknown>>(`/projects/${projectId}`, {
       method: 'PUT',
       body: projectData,
     });
@@ -176,20 +176,20 @@ class ApiClient {
   // Design Management API (via API Gateway)
   async getDesigns(projectId?: string) {
     const endpoint = projectId ? `/designs/project/${projectId}` : '/designs';
-    return this.request<any[]>(endpoint);
+    return this.request<Record<string, unknown>[]>(endpoint);
   }
 
   async getDesign(designId: string) {
-    return this.request<any>(`/designs/${designId}`);
+    return this.request<Record<string, unknown>>(`/designs/${designId}`);
   }
 
   async createDesign(designData: { 
     name: string; 
     project_id: string; 
-    design_data: any;
+    design_data: Record<string, unknown>;
     description?: string;
   }) {
-    return this.request<any>('/designs', {
+    return this.request<Record<string, unknown>>('/designs', {
       method: 'POST',
       body: designData,
     });
@@ -197,10 +197,10 @@ class ApiClient {
 
   async updateDesign(designId: string, designData: Partial<{
     name: string;
-    design_data: any;
+    design_data: Record<string, unknown>;
     description: string;
   }>) {
-    return this.request<any>(`/designs/${designId}`, {
+    return this.request<Record<string, unknown>>(`/designs/${designId}`, {
       method: 'PUT',
       body: designData,
     });
@@ -214,7 +214,7 @@ class ApiClient {
 
   // Design Version Management API
   async createDesignVersion(designId: string, versionData?: { description?: string }) {
-    return this.request<any>(`/designs/${designId}/versions`, {
+    return this.request<Record<string, unknown>>(`/designs/${designId}/versions`, {
       method: 'POST',
       body: versionData || {},
     });
@@ -223,11 +223,11 @@ class ApiClient {
   // Component Management API (via API Gateway)
   async getComponents(category?: string) {
     const endpoint = category ? `/components?category=${category}` : '/components';
-    return this.request<any[]>(endpoint);
+    return this.request<Record<string, unknown>[]>(endpoint);
   }
 
   async getComponent(componentId: string) {
-    return this.request<any>(`/components/${componentId}`);
+    return this.request<Record<string, unknown>>(`/components/${componentId}`);
   }
 
   async createComponent(componentData: {
@@ -235,11 +235,11 @@ class ApiClient {
     type: string;
     category: string;
     description?: string;
-    properties_schema: any;
-    default_properties: any;
+    properties_schema: Record<string, unknown>;
+    default_properties: Record<string, unknown>;
     icon_url?: string;
   }) {
-    return this.request<any>('/components', {
+    return this.request<Record<string, unknown>>('/components', {
       method: 'POST',
       body: componentData,
     });
@@ -250,11 +250,11 @@ class ApiClient {
     type: string;
     category: string;
     description: string;
-    properties_schema: any;
-    default_properties: any;
+    properties_schema: Record<string, unknown>;
+    default_properties: Record<string, unknown>;
     icon_url: string;
   }>) {
-    return this.request<any>(`/components/${componentId}`, {
+    return this.request<Record<string, unknown>>(`/components/${componentId}`, {
       method: 'PUT',
       body: componentData,
     });
@@ -267,7 +267,7 @@ class ApiClient {
   }
 
   // Simulation Management API (via API Gateway)
-  async createSimulationSession(designId: string, name?: string, config?: any) {
+  async createSimulationSession(designId: string, name?: string, config?: Record<string, unknown>) {
     return this.request<{ session_id: string }>('/simulations', {
       method: 'POST',
       body: { 
@@ -279,11 +279,11 @@ class ApiClient {
   }
 
   async getSimulationSession(sessionId: string) {
-    return this.request<any>(`/simulations/${sessionId}`);
+    return this.request<Record<string, unknown>>(`/simulations/${sessionId}`);
   }
 
   async getSimulationSessions() {
-    return this.request<any[]>('/simulations/sessions');
+    return this.request<Record<string, unknown>[]>('/simulations/sessions');
   }
 
   async startSimulation(sessionId: string) {
@@ -317,15 +317,15 @@ class ApiClient {
   }
 
   // AI Service API (via API Gateway)
-  async getAIRecommendations(designData: any) {
-    return this.request<any>('/ai/recommendations', {
+  async getAIRecommendations(designData: Record<string, unknown>) {
+    return this.request<Record<string, unknown>>('/ai/recommendations', {
       method: 'POST',
       body: { design_data: designData },
     });
   }
 
-  async getAIOptimizations(designData: any) {
-    return this.request<any>('/ai/optimizations', {
+  async getAIOptimizations(designData: Record<string, unknown>) {
+    return this.request<Record<string, unknown>>('/ai/optimizations', {
       method: 'POST',
       body: { design_data: designData },
     });
@@ -343,7 +343,7 @@ class ApiClient {
       endpoint += `?${params.toString()}`;
     }
     
-    return this.request<any[]>(endpoint);
+    return this.request<Record<string, unknown>[]>(endpoint);
   }
 
   async getLogs(sessionId?: string, componentId?: string) {
@@ -357,7 +357,7 @@ class ApiClient {
       endpoint += `?${params.toString()}`;
     }
     
-    return this.request<any[]>(endpoint);
+    return this.request<Record<string, unknown>[]>(endpoint);
   }
 
   async getTraces(sessionId?: string, componentId?: string) {
@@ -371,7 +371,7 @@ class ApiClient {
       endpoint += `?${params.toString()}`;
     }
     
-    return this.request<any[]>(endpoint);
+    return this.request<Record<string, unknown>[]>(endpoint);
   }
 }
 

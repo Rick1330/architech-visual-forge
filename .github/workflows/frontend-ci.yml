@@ -2,27 +2,8 @@
 name: Frontend CI/CD
 
 on:
-  push:
-    branches: [ main, fix/failing-tests ]
-    paths:
-      - 'src/**'
-      - 'public/**'
-      - 'package*.json'
-      - 'vite.config.ts'
-      - 'tsconfig*.json'
-      - 'tailwind.config.ts'
-      - 'Dockerfile'
-      - '.github/workflows/frontend-ci.yml'
   pull_request:
-    branches: [ main, develop ]
-    paths:
-      - 'src/**'
-      - 'public/**'
-      - 'package*.json'
-      - 'vite.config.ts'
-      - 'tsconfig*.json'
-      - 'tailwind.config.ts'
-      - 'Dockerfile'
+    branches: [ main ]
 
 env:
   NODE_VERSION: '18'

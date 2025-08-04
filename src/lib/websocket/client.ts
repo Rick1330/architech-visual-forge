@@ -38,7 +38,7 @@ class SimulationWebSocketClient {
   private errorHandlers: Set<ErrorHandler> = new Set();
 
   constructor(config: WebSocketConfig = {}) {
-    this.baseUrl = config.baseUrl || process.env.VITE_WS_BASE_URL || 'ws://localhost:8000/api/v1';
+    this.baseUrl = config.baseUrl || import.meta.env.VITE_WS_BASE_URL || 'ws://localhost:8000/api/v1';
     this.reconnectAttempts = config.reconnectAttempts || 5;
     this.reconnectDelay = config.reconnectDelay || 3000;
   }

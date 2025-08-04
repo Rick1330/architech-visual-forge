@@ -68,7 +68,7 @@ const EnhancedPropertyPanel = () => {
             <Label htmlFor={property.id}>{property.name}</Label>
             <Input
               id={property.id}
-              value={property.value || ''}
+              value={String(property.value || '')}
               onChange={(e) => handleChange(e.target.value)}
               placeholder={`Enter ${property.name.toLowerCase()}`}
               className={hasValidation ? 'border-status-error' : ''}
@@ -86,7 +86,7 @@ const EnhancedPropertyPanel = () => {
             <Input
               id={property.id}
               type="number"
-              value={property.value || ''}
+              value={String(property.value || '')}
               onChange={(e) => handleChange(Number(e.target.value))}
               min={property.min}
               max={property.max}
@@ -104,7 +104,7 @@ const EnhancedPropertyPanel = () => {
               <span className="text-sm text-muted-foreground">{property.value || property.min || 0}</span>
             </div>
             <Slider
-              value={[property.value || property.min || 0]}
+              value={[Number(property.value) || property.min || 0]}
               onValueChange={(values) => handleChange(values[0])}
               min={property.min || 0}
               max={property.max || 100}
@@ -120,7 +120,7 @@ const EnhancedPropertyPanel = () => {
             <Label htmlFor={property.id}>{property.name}</Label>
             <Textarea
               id={property.id}
-              value={property.value || ''}
+              value={String(property.value || '')}
               onChange={(e) => handleChange(e.target.value)}
               placeholder={`Enter ${property.name.toLowerCase()}`}
               rows={3}
@@ -132,7 +132,7 @@ const EnhancedPropertyPanel = () => {
         return (
           <div className="space-y-2">
             <Label htmlFor={property.id}>{property.name}</Label>
-            <Select value={property.value || ''} onValueChange={handleChange}>
+            <Select value={String(property.value || '')} onValueChange={handleChange}>
               <SelectTrigger>
                 <SelectValue placeholder={`Select ${property.name.toLowerCase()}`} />
               </SelectTrigger>
@@ -153,7 +153,7 @@ const EnhancedPropertyPanel = () => {
             <Label htmlFor={property.id}>{property.name}</Label>
             <Switch
               id={property.id}
-              checked={property.value || false}
+              checked={Boolean(property.value)}
               onCheckedChange={handleChange}
             />
           </div>

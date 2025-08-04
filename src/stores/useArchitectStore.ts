@@ -212,7 +212,7 @@ export const useArchitectStore = create<ArchitectStore>((set, get) => ({
     set((state) => ({
       nodes: state.nodes.map((node) => {
         const change = changes.find((c: any) => c.id === node.id);
-        if (change) {
+        if (change && typeof change === 'object') {
           return { ...node, ...change };
         }
         return node;
@@ -224,7 +224,7 @@ export const useArchitectStore = create<ArchitectStore>((set, get) => ({
     set((state) => ({
       edges: state.edges.map((edge) => {
         const change = changes.find((c: any) => c.id === edge.id);
-        if (change) {
+        if (change && typeof change === 'object') {
           return { ...edge, ...change };
         }
         return edge;

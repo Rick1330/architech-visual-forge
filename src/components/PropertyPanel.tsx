@@ -43,7 +43,7 @@ export const PropertyPanel = () => {
       case 'string':
         return (
           <Input
-            value={property.value || ''}
+            value={String(property.value || '')}
             onChange={(e) => handleChange(e.target.value)}
             placeholder={`Enter ${property.name.toLowerCase()}`}
           />
@@ -53,7 +53,7 @@ export const PropertyPanel = () => {
         return (
           <Input
             type="number"
-            value={property.value || 0}
+            value={String(property.value || 0)}
             onChange={(e) => handleChange(Number(e.target.value))}
             min={property.min}
             max={property.max}
@@ -64,7 +64,7 @@ export const PropertyPanel = () => {
       case 'textarea':
         return (
           <Textarea
-            value={property.value || ''}
+            value={String(property.value || '')}
             onChange={(e) => handleChange(e.target.value)}
             placeholder={`Enter ${property.name.toLowerCase()}`}
             rows={3}
@@ -73,7 +73,7 @@ export const PropertyPanel = () => {
       
       case 'select':
         return (
-          <Select value={property.value} onValueChange={handleChange}>
+          <Select value={String(property.value || '')} onValueChange={handleChange}>
             <SelectTrigger>
               <SelectValue placeholder={`Select ${property.name.toLowerCase()}`} />
             </SelectTrigger>
@@ -91,7 +91,7 @@ export const PropertyPanel = () => {
         return (
           <div className="flex items-center space-x-2">
             <Switch
-              checked={property.value || false}
+              checked={Boolean(property.value)}
               onCheckedChange={handleChange}
             />
             <span className="text-sm text-muted-foreground">
